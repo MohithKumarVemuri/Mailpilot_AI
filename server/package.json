@@ -1,0 +1,27 @@
+{
+  "name": "mailpilot-ai-server",
+  "version": "1.0.0",
+  "description": "MailPilot AI - Backend server with Express, Mongoose, Gmail OAuth, and Gemini AI",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js"
+  },
+  "dependencies": {
+    "@google/generative-ai": "^0.24.0",
+    "bcryptjs": "^3.0.2",
+    "compression": "^1.8.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "express-rate-limit": "^7.5.0",
+    "express-validator": "^7.2.1",
+    "google-auth-library": "^9.15.1",
+    "googleapis": "^144.0.0",
+    "helmet": "^8.0.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.10.1",
+    "morgan": "^1.10.0"
+  }
+}

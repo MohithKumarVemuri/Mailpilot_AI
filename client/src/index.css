@@ -1,0 +1,77 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: light;
+  }
+  
+  html.dark {
+    color-scheme: dark;
+  }
+
+  body {
+    @apply bg-slate-50 text-slate-900 dark:bg-[#0b0f17] dark:text-slate-100 antialiased overflow-x-hidden font-sans transition-colors duration-150;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+}
+
+/* Minimal precision scrollbar for both themes */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(100, 116, 139, 0.2);
+  border-radius: 9999px;
+}
+.dark ::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(100, 116, 139, 0.35);
+}
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+/* Clean Surfaces & Elevation */
+.surface-card {
+  @apply bg-white border border-slate-200/90 dark:bg-slate-850 dark:border-slate-750/80 shadow-subtle dark:shadow-card-dark;
+}
+
+.surface-secondary {
+  @apply bg-slate-50/80 border border-slate-200/80 dark:bg-slate-900/70 dark:border-slate-800;
+}
+
+.surface-hover {
+  @apply transition-all duration-150;
+}
+.surface-hover:hover {
+  @apply bg-slate-100/80 border-slate-300 dark:bg-slate-800 dark:border-slate-700;
+}
+
+.hairline-border {
+  @apply border-slate-200 dark:border-slate-800;
+}
+
+/* Modern Pill & Button Design System */
+.btn-primary {
+  @apply bg-brand-600 hover:bg-brand-700 text-white font-medium text-sm px-4 py-2.5 rounded-lg transition-all active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none shadow-sm hover:shadow-glow inline-flex items-center justify-center;
+}
+
+.btn-secondary {
+  @apply bg-slate-100 hover:bg-slate-200/90 text-slate-800 border border-slate-200 hover:border-slate-300 dark:bg-slate-800/90 dark:hover:bg-slate-750 dark:text-slate-200 dark:hover:text-white dark:border-slate-700 dark:hover:border-slate-600 font-medium text-sm px-4 py-2.5 rounded-lg transition-all active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none inline-flex items-center justify-center;
+}
+
+.btn-ghost {
+  @apply text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-slate-100 dark:hover:bg-slate-800 font-medium text-sm px-3.5 py-2 rounded-lg transition-colors inline-flex items-center justify-center;
+}
+
+.input-minimal {
+  @apply bg-white border border-slate-200 rounded-lg text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:bg-slate-900 dark:border-slate-750 dark:text-slate-100 dark:placeholder-slate-500 dark:focus:border-brand-400 dark:focus:ring-brand-400/20 transition-all font-sans;
+}
