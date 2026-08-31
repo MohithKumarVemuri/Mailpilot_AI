@@ -24,12 +24,8 @@ app.use(
 app.use(
   cors({
     origin: (origin, callback) => {
-      // Allow requests with no origin (mobile apps, curl, etc.) or matching clientUrl
-      if (!origin || origin === config.clientUrl || origin.startsWith('http://localhost:')) {
-        callback(null, true);
-      } else {
-        callback(new Error('Blocked by CORS policy'));
-      }
+      // Allow all origins or matching clientUrl for API accessibility
+      callback(null, true);
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
@@ -39,9 +35,21 @@ app.use(
 
 // Performance & Logging
 app.use(compression());
-app.use(morgan('dev'));
+if (process.env.NODE_ENV !== 'test') {
+  app.use(morgan('dev'));
+}
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
+
+// Ensure Database connection for serverless / traditional requests
+app.use(async (req, res, next) => {
+  try {
+    await connectDB();
+  } catch (e) {
+    console.error('DB connect middleware error:', e);
+  }
+  next();
+});
 
 // System Heartbeat & Health Check
 app.get('/api/health', (req, res) => {
@@ -55,6 +63,14 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+app.get('/', (req, res) => {
+  res.json({
+    service: 'MailPilot AI Server API',
+    status: 'operational',
+    health: '/api/health'
+  });
+});
+
 // API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/emails', emailRoutes);
@@ -64,21 +80,19 @@ app.use('/api/integrations', integrationRoutes);
 // Central Error Handler
 app.use(errorHandler);
 
-// Bootstrap Server
-async function startServer() {
-  await connectDB();
-
-  app.listen(config.port, () => {
-    console.log(`=========================================`);
-    console.log(`🚀 MailPilot AI Backend Running on port ${config.port}`);
-    console.log(`🌐 Health endpoint: http://localhost:${config.port}/api/health`);
-    console.log(`🔐 Environment: ${config.nodeEnv}`);
-    console.log(`🤖 Gemini AI: ${config.gemini.apiKey ? 'Enabled (Live Key)' : 'Active (Deterministic Fallback Mode)'}`);
-    console.log(`📫 Gmail OAuth: ${config.google.clientId ? 'Configured' : 'Demo Simulated Mode'}`);
-    console.log(`=========================================`);
+// Bootstrap Standalone Server when not running in serverless environment
+if (process.env.VERCEL !== '1') {
+  connectDB().then(() => {
+    app.listen(config.port, () => {
+      console.log(`=========================================`);
+      console.log(`🚀 MailPilot AI Backend Running on port ${config.port}`);
+      console.log(`🌐 Health endpoint: http://localhost:${config.port}/api/health`);
+      console.log(`🔐 Environment: ${config.nodeEnv}`);
+      console.log(`🤖 Gemini AI: ${config.gemini.apiKey ? 'Enabled (Live Key)' : 'Active (Deterministic Fallback Mode)'}`);
+      console.log(`📫 Gmail OAuth: ${config.google.clientId ? 'Configured' : 'Demo Simulated Mode'}`);
+      console.log(`=========================================`);
+    });
   });
 }
-
-startServer();
 
 export default app;
