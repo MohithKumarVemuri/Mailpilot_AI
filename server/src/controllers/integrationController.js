@@ -39,10 +39,15 @@ export const integrationController = {
 
   async startOAuth(req, res, next) {
     try {
-      const state = Buffer.from(JSON.stringify({ userId: req.user.id })).toString('base64');
+      const clientUrl =
+        req.headers.origin ||
+        (req.headers.referer ? new URL(req.headers.referer).origin : null) ||
+        config.clientUrl;
+      const state = Buffer.from(JSON.stringify({ userId: req.user.id, clientUrl })).toString('base64');
+
       if (!config.google.clientId || !config.google.clientSecret) {
         // Return notice or direct simulated connect URL
-        const authUrl = `${config.clientUrl}/integrations?demo_connect=true`;
+        const authUrl = `${clientUrl}/integrations?demo_connect=true`;
         return res.json({
           success: true,
           data: {
@@ -64,29 +69,33 @@ export const integrationController = {
   },
 
   async handleCallback(req, res) {
+    let clientUrl = config.clientUrl || 'https://mailpilot-ai-frontend.vercel.app';
     try {
       const { code, state, error } = req.query;
-
-      if (error) {
-        return res.redirect(`${config.clientUrl}/integrations?error=${encodeURIComponent(error)}`);
-      }
-
-      if (!code) {
-        return res.redirect(`${config.clientUrl}/integrations?error=missing_code`);
-      }
 
       let userId = null;
       if (state) {
         try {
           const parsed = JSON.parse(Buffer.from(state, 'base64').toString('utf8'));
           userId = parsed.userId;
+          if (parsed.clientUrl) {
+            clientUrl = parsed.clientUrl.replace(/\/+$/, '');
+          }
         } catch (e) {
           console.warn('[OAuth] Could not parse state:', e.message);
         }
       }
 
+      if (error) {
+        return res.redirect(`${clientUrl}/integrations?error=${encodeURIComponent(error)}`);
+      }
+
+      if (!code) {
+        return res.redirect(`${clientUrl}/integrations?error=missing_code`);
+      }
+
       if (!userId) {
-        return res.redirect(`${config.clientUrl}/integrations?error=invalid_state`);
+        return res.redirect(`${clientUrl}/integrations?error=invalid_state`);
       }
 
       const { tokens, email, displayName } = await gmailIntegration.exchangeCodeForTokens(code);
@@ -106,10 +115,10 @@ export const integrationController = {
         expiresAt: tokens.expiry_date ? new Date(tokens.expiry_date) : undefined
       });
 
-      res.redirect(`${config.clientUrl}/integrations?status=connected&email=${encodeURIComponent(email)}`);
+      res.redirect(`${clientUrl}/integrations?status=connected&email=${encodeURIComponent(email)}`);
     } catch (err) {
       console.error('[OAuth] Callback handling error:', err);
-      res.redirect(`${config.clientUrl}/integrations?error=${encodeURIComponent(err.message)}`);
+      res.redirect(`${clientUrl}/integrations?error=${encodeURIComponent(err.message)}`);
     }
   },
 
