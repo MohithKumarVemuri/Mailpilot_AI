@@ -29,7 +29,7 @@ export const authController = {
 
   async getMe(req, res, next) {
     try {
-      const user = await authService.getProfile(req.user.id);
+      const user = await authService.getProfile(req.user.id, req.user);
       res.json({
         success: true,
         data: { user }

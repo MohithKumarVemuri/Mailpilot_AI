@@ -47,6 +47,27 @@ export const userStore = {
     return u ? { ...u } : null;
   },
 
+  async ensureUserFromToken(decoded) {
+    if (!decoded || !decoded.id) return null;
+    if (isMongoConnected()) {
+      // In Mongo mode, try finding user; if not found, we shouldn't invent an arbitrary user
+      return await UserModel.findById(decoded.id).exec();
+    }
+    let u = memoryStore.users.get(decoded.id.toString());
+    if (!u) {
+      u = {
+        _id: decoded.id,
+        id: decoded.id,
+        name: decoded.name || 'User',
+        email: decoded.email ? decoded.email.toLowerCase().trim() : '',
+        createdAt: new Date(),
+        lastLogin: new Date()
+      };
+      memoryStore.users.set(decoded.id.toString(), u);
+    }
+    return { ...u };
+  },
+
   async create(userData) {
     if (isMongoConnected()) {
       const user = new UserModel(userData);
